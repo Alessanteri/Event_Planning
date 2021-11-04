@@ -1,0 +1,4 @@
+<div class="phx-hero">
+  <h2>Hello World, from Phoenix!</h2>
+  <%= link "Return to login page", to: Routes.page_path(@conn, :login) %>
+</div>
