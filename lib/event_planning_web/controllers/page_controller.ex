@@ -13,13 +13,12 @@ defmodule EventPlanningWeb.PageController do
 
   def login(conn, params) when params != %{} do
     %{"page" => %{"password" => password}} = params
-    IO.puts(password)
-    conn = delete_session(conn, :message)
 
     if password == @bearer_cookie_key do
       conn = put_session(conn, :message, @bearer_cookie_key)
       redirect(conn, to: Routes.home_path(conn, :index))
     else
+      conn = delete_session(conn, :message)
       render(conn, "login.html")
     end
   end
