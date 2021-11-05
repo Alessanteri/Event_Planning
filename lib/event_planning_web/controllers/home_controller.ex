@@ -6,7 +6,6 @@ defmodule EventPlanningWeb.HomeController do
 
   def index(conn, _params) do
     message = get_session(conn, :message)
-    IO.puts(message)
 
     if message != @bearer_cookie_key do
       redirect(conn, to: Routes.page_path(conn, :login))
