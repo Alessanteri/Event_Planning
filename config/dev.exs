@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :event_planning, EventPlanning.Repo,
-  username: "event_planning_user",
-  password: "12345678",
+  username: "postgres",
+  password: "123456789",
   database: "event_planning_repo",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,

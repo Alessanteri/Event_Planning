@@ -1,0 +1,55 @@
+<h1>Listing Events</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th> Start Date</th>
+      <th> Repetition</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+
+  <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
+    <div>
+      <%= select f, :categories_id, @categories %>
+    </div>
+    <%= submit "print", class: "btn btn-lg btn-primary btn-block" %>
+  <% end %>
+
+<%= for event <- @event_without_duplicate do %>
+    <tr>
+      <td><%= event.start_date %></td>
+      <td><%= event.repetition %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
+        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
+        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+
+    </tr>
+
+<% end %>
+<%= for event <- @event_with_duplicate do %>
+    <tr bgcolor="red">
+      <td><%= event.start_date %></td>
+      <td><%= event.repetition %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
+        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
+        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+
+    </tr>
+
+<% end %>
+
+
+  </tbody>
+</table>
+
+<span><%= link "New Event", to: Routes.event_path(@conn, :new) %></span>
+<p><%= link "Next Event", to: Routes.event_path(@conn, :next_event) %></p>
