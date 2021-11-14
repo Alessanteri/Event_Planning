@@ -3,7 +3,6 @@ defmodule EventPlanningWeb.HomeControllerTest do
 
   test "home page testing without an access key", %{conn: conn} do
     conn = get(conn, Routes.home_path(conn, :index))
-    # message = "_hello_phoenix_key"
     assert html_response(conn, 302) =~ Routes.page_path(conn, :login)
   end
 

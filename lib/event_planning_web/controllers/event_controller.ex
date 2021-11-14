@@ -4,16 +4,14 @@ defmodule EventPlanningWeb.EventController do
   alias EventPlanning.IAE
   alias EventPlanning.IAE.Event
 
-  # def index(conn, _params) do
-  #   events = IAE.list_events()
-  #   render(conn, "index.html", events: events)
-  # end
-
   def new(conn, _params) do
     changeset = IAE.change_event(%Event{})
     render(conn, "new.html", changeset: changeset)
   end
 
+  @doc """
+  Create of a new event.
+  """
   def create(conn, %{"event" => event_params}) do
     case IAE.create_event(event_params) do
       {:ok, _event} ->
@@ -26,17 +24,26 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Show  enevt.
+  """
   def show(conn, %{"id" => id}) do
     event = IAE.get_event!(id)
     render(conn, "show.html", event: event)
   end
 
+  @doc """
+  Edit event.
+  """
   def edit(conn, %{"id" => id}) do
     event = IAE.get_event!(id)
     changeset = IAE.change_event(event)
     render(conn, "edit.html", event: event, changeset: changeset)
   end
 
+  @doc """
+  Update event.
+  """
   def update(conn, %{"id" => id, "event" => event_params}) do
     event = IAE.get_event!(id)
 
@@ -51,6 +58,9 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Delete event.
+  """
   def delete(conn, %{"id" => id}) do
     event = IAE.get_event!(id)
     {:ok, _event} = IAE.delete_event(event)
@@ -60,6 +70,9 @@ defmodule EventPlanningWeb.EventController do
     |> redirect(to: Routes.event_path(conn, :my_schedule))
   end
 
+  @doc """
+  Show events schedule when are no parameters.
+  """
   def my_schedule(conn, params) when params == %{} do
     categories = ["week", "month", "year"]
 
@@ -70,6 +83,9 @@ defmodule EventPlanningWeb.EventController do
     )
   end
 
+  @doc """
+  Show events schedule when parameters is not nil.
+  """
   def my_schedule(conn, params) when params != %{} do
     %{"page" => %{"categories_id" => categories_id}} = params
     categories = ["week", "month", "year"]
@@ -87,6 +103,9 @@ defmodule EventPlanningWeb.EventController do
     )
   end
 
+  @doc """
+  Selection of meetings by parameter "week".
+  """
   def select_events_for_date(events, categories_id) when categories_id == "week" do
     events
     |> Enum.reject(fn x ->
@@ -97,6 +116,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Selection of meetings by parameter "month".
+  """
   def select_events_for_date(events, categories_id) when categories_id == "month" do
     date_now = DateTime.now!("Europe/Minsk")
 
@@ -119,6 +141,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Selection of meetings by parameter "year".
+  """
   def select_events_for_date(events, categories_id) when categories_id == "year" do
     date_end = create_date_end(DateTime.now!("Europe/Minsk"))
 
@@ -128,6 +153,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Creates a date one year from today.
+  """
   def create_date_end(date) do
     %DateTime{
       year: date.year + 1,
@@ -143,6 +171,9 @@ defmodule EventPlanningWeb.EventController do
     }
   end
 
+  @doc """
+  Creates events greater than today.
+  """
   def create_events_greater_today(events) do
     events
     |> Enum.map(fn x ->
@@ -160,6 +191,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Find the nearest event recurring every year.
+  """
   def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each year" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
@@ -170,6 +204,9 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Find the nearest event recurring every month.
+  """
   def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each month" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
@@ -185,6 +222,9 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Find the nearest event recurring every week.
+  """
   def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each week" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
@@ -195,6 +235,9 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Find the nearest event recurring every day.
+  """
   def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each day" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
@@ -205,6 +248,9 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
+  @doc """
+  Returns non-duplicate events.
+  """
   def return_data_without_duplicate(events) do
     Enum.reduce(events, [], fn x, acc ->
       if count_number_of_repetitions_data_start(events, x) == 0 do
@@ -215,6 +261,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Returns duplicate events.
+  """
   def return_data_duplicate(events) do
     Enum.reduce(events, [], fn x, acc ->
       if count_number_of_repetitions_data_start(events, x) != 0 do
@@ -225,6 +274,9 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Counts the number of repetitions of events.
+  """
   def count_number_of_repetitions_data_start(events, item) do
     Enum.reduce(events, -1, fn y, ac ->
       if item.start_date == y.start_date do
@@ -235,8 +287,11 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
+  @doc """
+  Returns the next event and the time before it.
+  """
   def next_event(conn, _params) do
-    events = create_events_greater_today(IAE.get_upcoming_events())
+    events = create_events_greater_today(IAE.list_events())
 
     min_date_value_events =
       Enum.min_by(

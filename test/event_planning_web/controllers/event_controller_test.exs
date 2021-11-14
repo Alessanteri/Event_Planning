@@ -12,13 +12,6 @@ defmodule EventPlanningWeb.EventControllerTest do
     event
   end
 
-  # describe "index" do
-  #   test "lists all events", %{conn: conn} do
-  #     conn = get(conn, Routes.event_path(conn, :index))
-  #     assert html_response(conn, 200) =~ "Listing Events"
-  #   end
-  # end
-
   describe "new event" do
     test "renders form", %{conn: conn} do
       conn = get(conn, Routes.event_path(conn, :new))
