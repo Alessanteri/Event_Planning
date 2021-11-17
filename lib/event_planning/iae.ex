@@ -26,6 +26,7 @@ defmodule EventPlanning.IAE do
   def create_event(attrs \\ %{}) do
     %Event{}
     |> Event.changeset(attrs)
+    |> Event.set_event_name_if_nil()
     |> Repo.insert()
   end
 
@@ -35,6 +36,7 @@ defmodule EventPlanning.IAE do
   def update_event(%Event{} = event, attrs) do
     event
     |> Event.changeset(attrs)
+    |> Event.set_event_name_if_nil()
     |> Repo.update()
   end
 
