@@ -1,11 +1,14 @@
 defmodule EventPlanning.IAE.Event do
   use Ecto.Schema
   import Ecto.Changeset
+  alias EventPlanning.Accounts.User
 
   schema "events" do
     field(:start_date, :naive_datetime)
     field(:repetition, :string)
     field(:name, :string)
+    belongs_to(:user, User)
+
     timestamps()
   end
 
@@ -30,6 +33,8 @@ defmodule EventPlanning.IAE.Event do
     event
     |> cast(attrs, [:start_date, :repetition, :name])
     |> validate_required([:start_date, :repetition])
+    |> set_event_name_if_nil()
+    |> unique_constraint(:name, name: :events_name_index, message: "This name already exists!")
     |> validate_inclusion(:repetition, [
       "each day",
       "each week",
