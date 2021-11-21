@@ -21,3 +21,5 @@
     <%= submit "Save" %>
   </div>
 <% end %>
+
+<span id = "message"></span>

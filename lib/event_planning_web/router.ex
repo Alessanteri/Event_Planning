@@ -30,10 +30,7 @@ defmodule EventPlanningWeb.Router do
       get("/next_event", EventController, :next_event)
     end
 
-    resources("/session", SessionController,
-      only: [:new, :create, :delete]
-      # singleton: true
-    )
+    resources("/session", SessionController, only: [:new, :create, :delete])
   end
 
   scope "/", EventPlanningWeb do
@@ -41,8 +38,6 @@ defmodule EventPlanningWeb.Router do
 
     get("/home", HomeController, :index)
   end
-
-  # scope "/iae"  Ev
 
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router
@@ -66,3 +61,5 @@ defmodule EventPlanningWeb.Router do
     end
   end
 end
+
+# no match of right hand side value: %{"_csrf_token" => "PgBRCklHAxQxHj5UPSITfQkFMQgHKToMlX0A36PDenreywI09NHPJcPm", "page" => %{"categories_id" => "year"}}

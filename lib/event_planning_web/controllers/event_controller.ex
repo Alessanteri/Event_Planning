@@ -102,20 +102,36 @@ defmodule EventPlanningWeb.EventController do
   Show events schedule.
   """
   def my_schedule(conn, params) when params == %{} do
-    call_up_my_schedule(conn, "week")
+    call_up_my_schedule(conn, "week", "")
   end
 
   def my_schedule(conn, params) when params != %{} do
     %{"user_id" => user_id} = conn.params
     categories_id = "week"
 
-    if conn.body_params == %{} do
-      categories_id
-      call_up_my_schedule(conn, categories_id)
-    else
-      %{"page" => %{"categories_id" => categories_id}} = conn.body_params
-      call_up_my_schedule(conn, categories_id)
+    cond do
+      conn.body_params["page"] ->
+        categories_id
+        %{"page" => %{"categories_id" => categories_id}} = conn.body_params
+        call_up_my_schedule(conn, categories_id)
+
+      conn.body_params["file"] ->
+        file = conn.body_params["file"]
+        call_up_my_schedule(conn, categories_id, file.path)
+
+      true ->
+        call_up_my_schedule(conn, "week")
     end
+  end
+
+  def valid_data_in_file(conn, file) do
+    Enum.reduce(file, 0, fn x, acc ->
+      if x.dtstart != nil and x.comment != nil do
+        acc
+      else
+        acc = acc + 1
+      end
+    end)
   end
 
   def call_up_my_schedule(conn, categories_id) do
@@ -123,7 +139,35 @@ defmodule EventPlanningWeb.EventController do
 
     events = check_ability(conn, categories_id)
 
-    Enum.each(events, fn x -> IO.puts(x.name) end)
+    render(conn, "my_schedule.html",
+      event_without_duplicate: return_data_without_duplicate(events),
+      event_with_duplicate: return_data_duplicate(events),
+      categories: categories
+    )
+  end
+
+  def call_up_my_schedule(conn, categories_id, filepath) do
+    categories = ["week", "month", "year"]
+    file = ICalendar.from_ics(File.read!(filepath))
+
+    if valid_data_in_file(conn, file) == 0 do
+      Enum.each(file, fn x ->
+        event = %{
+          "name" => x.summary,
+          "start_date" => x.dtstart,
+          "user_id" => get_session(conn, :current_user).id,
+          "repetition" => x.comment
+        }
+
+        changeset =
+          conn.assigns[:user]
+          |> build_assoc(:event)
+          |> Event.changeset(event)
+          |> Repo.insert()
+      end)
+    end
+
+    events = check_ability(conn, categories_id)
 
     render(conn, "my_schedule.html",
       event_without_duplicate: return_data_without_duplicate(events),
