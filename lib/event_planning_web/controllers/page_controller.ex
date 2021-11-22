@@ -7,7 +7,7 @@ defmodule EventPlanningWeb.PageController do
     render(conn, "index.html")
   end
 
-  def login(conn, params) when params == %{} doy
+  def login(conn, params) when params == %{} do
     render(conn, "login.html")
   end
 
