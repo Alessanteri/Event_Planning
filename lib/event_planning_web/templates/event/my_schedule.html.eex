@@ -21,7 +21,15 @@
 <%= for event <- @event_without_duplicate do %>
     <tr>
       <td><%= event.start_date %></td>
-      <td><%= event.repetition %></td>
+      <%= if event.enabled do%>
+        <%= if event.repetition != nil do%>
+          <td><%= event.repetition %></td>
+        <%= else %>
+          <td>No repetition</td>
+        <% end %>
+      <% else %>
+        <td>No repetition</td>
+      <% end %>
 
       <td>
         <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
@@ -35,8 +43,15 @@
 <%= for event <- @event_with_duplicate do %>
     <tr bgcolor="red">
       <td><%= event.start_date %></td>
-      <td><%= event.repetition %></td>
-
+      <%= if event.enabled do%>
+        <%= if event.repetition != nil do%>
+          <td><%= event.repetition %></td>
+        <%= else %>
+          <td>No repetition</td>
+        <% end %>
+      <% else %>
+        <td>No repetition</td>
+      <% end %>
       <td>
         <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
         <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>

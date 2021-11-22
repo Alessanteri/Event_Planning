@@ -1,4 +1,4 @@
-defmodule EventPlanning.IAE do
+defmodule EventPlanning.Operation.Event.Workflow do
   @moduledoc """
   The IAE context.
   """
@@ -6,19 +6,20 @@ defmodule EventPlanning.IAE do
   import Ecto.Query, warn: false
   alias EventPlanning.Repo
 
-  alias EventPlanning.IAE.Event
-
-  @doc """
-  Returns the list of events.
-  """
-  def list_events do
-    Repo.all(Event)
-  end
+  alias EventPlanning.Models.Event
 
   @doc """
   Gets a single event.
   """
-  def get_event!(id), do: Repo.get!(Event, id)
+  def get_event!(id) do
+    case Repo.get(Event, id) do
+      event ->
+        event
+
+      nil ->
+        nil
+    end
+  end
 
   @doc """
   Creates a event.
@@ -36,20 +37,6 @@ defmodule EventPlanning.IAE do
     event
     |> Event.changeset(attrs)
     |> Repo.update()
-  end
-
-  @doc """
-  Deletes a event.
-  """
-  def delete_event(%Event{} = event) do
-    Repo.delete(event)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking event changes.
-  """
-  def change_event(%Event{} = event, attrs \\ %{}) do
-    Event.changeset(event, attrs)
   end
 
   @doc """

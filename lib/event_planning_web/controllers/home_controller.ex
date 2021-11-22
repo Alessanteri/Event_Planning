@@ -5,21 +5,16 @@ defmodule EventPlanningWeb.HomeController do
   plug(:check_session_password)
 
   def index(conn, _params) do
-    message = get_session(conn, :message)
-
-    if message != @bearer_cookie_key do
-      redirect(conn, to: Routes.page_path(conn, :login))
-    else
-      render(conn, "index.html")
-    end
+    render(conn, "index.html")
   end
 
   def check_session_password(conn, _opts) do
     if get_session(conn, :message) == @bearer_cookie_key do
       conn
     else
-      conn = delete_session(conn, :message)
-      conn
+      conn =
+        delete_session(conn, :message)
+        |> redirect(to: Routes.page_path(conn, :login))
     end
   end
 end
