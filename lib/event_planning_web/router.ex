@@ -22,14 +22,22 @@ defmodule EventPlanningWeb.Router do
 
   scope "/", EventPlanningWeb do
     pipe_through(:browser)
-    get("/home", HomeController, :index)
-    resources("/event", EventController, except: [:index])
-    get("/my_schedule", EventController, :my_schedule)
-    post("/my_schedule", EventController, :my_schedule)
-    get("/next_event", EventController, :next_event)
+
+    resources("/users", UserController) do
+      resources("/event", EventController, except: [:index])
+      get("/my_schedule", EventController, :my_schedule)
+      post("/my_schedule", EventController, :my_schedule)
+      get("/next_event", EventController, :next_event)
+    end
+
+    resources("/session", SessionController, only: [:new, :create, :delete])
   end
 
-  # scope "/iae"  Ev
+  scope "/", EventPlanningWeb do
+    pipe_through([:browser, :authenticate_user])
+
+    get("/home", HomeController, :index)
+  end
 
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router
@@ -39,4 +47,19 @@ defmodule EventPlanningWeb.Router do
       live_dashboard("/dashboard", metrics: EventPlanningWeb.Telemetry)
     end
   end
+
+  defp authenticate_user(conn, _) do
+    case get_session(conn, :user_id) do
+      nil ->
+        conn
+        |> Phoenix.Controller.put_flash(:error, "Login required")
+        |> Phoenix.Controller.redirect(to: "/session/new")
+        |> halt()
+
+      user_id ->
+        assign(conn, :current_user, EventPlanning.Accounts.get_user!(user_id))
+    end
+  end
 end
+
+# no match of right hand side value: %{"_csrf_token" => "PgBRCklHAxQxHj5UPSITfQkFMQgHKToMlX0A36PDenreywI09NHPJcPm", "page" => %{"categories_id" => "year"}}

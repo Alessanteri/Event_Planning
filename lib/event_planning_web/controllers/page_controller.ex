@@ -7,11 +7,11 @@ defmodule EventPlanningWeb.PageController do
     render(conn, "index.html")
   end
 
-  def login(conn, params) when params == %{} do
+  def login(conn, params) when params == %{} doy
     render(conn, "login.html")
   end
 
-  def login(conn, params) when params != %{} do
+  def login(conn, params) do
     %{"page" => %{"password" => password}} = params
 
     if password == @bearer_cookie_key do

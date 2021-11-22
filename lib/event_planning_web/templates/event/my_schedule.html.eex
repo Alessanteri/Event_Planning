@@ -1,17 +1,17 @@
 <h1>Listing Events</h1>
-
 <table>
   <thead>
     <tr>
+      <th> Name</th>
       <th> Start Date</th>
       <th> Repetition</th>
 
       <th></th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="table">
 
-  <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
+  <%= form_for @conn, Routes.user_event_path(@conn, :my_schedule, @user), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>
     </div>
@@ -19,14 +19,15 @@
   <% end %>
 
 <%= for event <- @event_without_duplicate do %>
-    <tr>
+    <tr id=<%= event.id %>>
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <td><%= event.repetition %></td>
 
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
-        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
-        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%= link "Show", to: Routes.user_event_path(@conn, :show, @user, event) %></span>
+        <span><%= link "Edit", to: Routes.user_event_path(@conn, :edit, @user, event) %></span>
+        <span><%= link "Delete", to: Routes.user_event_path(@conn, :delete, @user, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
       </td>
 
     </tr>
@@ -34,22 +35,37 @@
 <% end %>
 <%= for event <- @event_with_duplicate do %>
     <tr bgcolor="red">
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <td><%= event.repetition %></td>
 
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
-        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
-        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%= link "Show", to: Routes.user_event_path(@conn, :show, @user, event) %></span>
+        <span><%= link "Edit", to: Routes.user_event_path(@conn, :edit, @user, event) %></span>
+        <span><%= link "Delete", to: Routes.user_event_path(@conn, :delete, @user, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
       </td>
 
     </tr>
 
 <% end %>
 
-
   </tbody>
 </table>
 
-<span><%= link "New Event", to: Routes.event_path(@conn, :new) %></span>
-<p><%= link "Next Event", to: Routes.event_path(@conn, :next_event) %></p>
+<span><%= link "New Event", to: Routes.user_event_path(@conn, :new, @user) %></span>
+<p><%= link "Next Event", to: Routes.user_event_path(@conn, :next_event, @user) %></p>
+<%= if @user.role == "admin" do %>
+  <span><%= link "Show User", to: Routes.user_path(@conn, :index) %></span>
+<% end %>
+
+<%= form_for @conn, "my_schedule", [multipart: true], fn f -> %>
+
+  <div class="form-group">
+    <label>Documents</label>
+    <%= file_input f, :file, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= submit "Submit", class: "btn btn-primary" %>
+  </div>
+<% end %>
