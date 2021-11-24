@@ -15,15 +15,17 @@ defmodule EventPlanningWeb.EventController do
   Create of a new event.
   """
   def create(conn, %{"event" => event_params}) do
-    case Workflow.create_event(event_params) do
-      {:ok, _event} ->
-        conn
-        |> put_flash(:info, "Event created successfully.")
-        |> redirect(to: Routes.event_path(conn, :my_schedule))
+    # case Workflow.create_event(event_params) do
+    #   {:ok, _event} ->
+    conn
+    |> put_flash(:info, "Event created successfully.")
+    |> redirect(
+      to: Routes.event_path(conn, :my_schedule, %{"page" => %{"categories_id" => "week"}})
+    )
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
-    end
+    # {:error, %Ecto.Changeset{} = changeset} ->
+    #   render(conn, "new.html", changeset: changeset)
+    # end
   end
 
   @doc """
@@ -46,7 +48,7 @@ defmodule EventPlanningWeb.EventController do
   """
   def edit(conn, %{"id" => id}) do
     event = Repo.get(Event, id)
-    changeset = Workflow.change_event(event, %{})
+    changeset = Event.changeset(event, %{})
     render(conn, "edit.html", event: event, changeset: changeset)
   end
 
@@ -78,7 +80,9 @@ defmodule EventPlanningWeb.EventController do
 
       conn
       |> put_flash(:info, "Event deleted successfully.")
-      |> redirect(to: Routes.event_path(conn, :my_schedule))
+      |> redirect(
+        to: Routes.event_path(conn, :my_schedule, %{"page" => %{"categories_id" => "week"}})
+      )
     else
       conn
       |> put_flash(:info, "Event not found.")
@@ -92,11 +96,9 @@ defmodule EventPlanningWeb.EventController do
   def my_schedule(conn, params) when params == %{} do
     categories = ["week", "month", "year"]
 
-    render(conn, "my_schedule.html",
-      event_without_duplicate: [],
-      event_with_duplicate: [],
-      categories: categories
-    )
+    categories_id = "week"
+
+    call_my_schedule(conn, categories, categories_id)
   end
 
   @doc """
@@ -106,6 +108,10 @@ defmodule EventPlanningWeb.EventController do
     %{"page" => %{"categories_id" => categories_id}} = params
     categories = ["week", "month", "year"]
 
+    call_my_schedule(conn, categories, categories_id)
+  end
+
+  def call_my_schedule(conn, categories, categories_id) do
     events =
       select_events_for_date(
         create_events_greater_today(Workflow.get_events_in_period_of_dates(categories_id)),

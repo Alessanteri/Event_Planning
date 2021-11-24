@@ -46,7 +46,8 @@ defmodule EventPlanning.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:poison, "~> 3.0"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:guardian, "~> 0.14"}
     ]
   end
 

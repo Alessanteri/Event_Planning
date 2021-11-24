@@ -9,7 +9,7 @@
       <th></th>
     </tr>
   </thead>
-  <tbody>
+  <tbody id="table">
 
   <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
     <div>
@@ -66,5 +66,8 @@
   </tbody>
 </table>
 
-<span><%= link "New Event", to: Routes.event_path(@conn, :new) %></span>
+<span><%= link "New Event", to: Routes.event_path(@conn, :new), id: "new_event" %></span>
 <p><%= link "Next Event", to: Routes.event_path(@conn, :next_event) %></p>
+
+
+<p id ="ttt">

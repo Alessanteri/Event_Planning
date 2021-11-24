@@ -21,6 +21,6 @@
   <% end %>
 
   <div>
-    <%= submit "Save", id: "submit" %>
+    <%= submit "Save", id: "update" %>
   </div>
 <% end %>
