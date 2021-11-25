@@ -46,7 +46,7 @@ defmodule EventPlanningWeb.EventController do
   """
   def edit(conn, %{"id" => id}) do
     event = Repo.get(Event, id)
-    changeset = Workflow.change_event(event, %{})
+    changeset = Event.changeset(event, %{})
     render(conn, "edit.html", event: event, changeset: changeset)
   end
 
@@ -210,7 +210,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every year.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each year" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "year" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -223,7 +223,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every month.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each month" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "month" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -241,7 +241,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every week.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each week" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "week" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -254,7 +254,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every day.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each day" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "day" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else

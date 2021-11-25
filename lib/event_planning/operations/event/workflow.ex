@@ -9,19 +9,6 @@ defmodule EventPlanning.Operation.Event.Workflow do
   alias EventPlanning.Models.Event
 
   @doc """
-  Gets a single event.
-  """
-  def get_event!(id) do
-    case Repo.get(Event, id) do
-      event ->
-        event
-
-      nil ->
-        nil
-    end
-  end
-
-  @doc """
   Creates a event.
   """
   def create_event(attrs \\ %{}) do

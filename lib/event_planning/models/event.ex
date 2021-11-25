@@ -16,10 +16,10 @@ defmodule EventPlanning.Models.Event do
     |> cast(attrs, [:start_date, :repetition, :enabled])
     |> validate_required([:start_date, :enabled])
     |> validate_inclusion(:repetition, [
-      "each day",
-      "each week",
-      "each month",
-      "each year",
+      "day",
+      "week",
+      "month",
+      "year",
       nil
     ])
   end
