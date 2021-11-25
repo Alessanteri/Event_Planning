@@ -30,6 +30,7 @@ defmodule EventPlanning.IAE.Event do
     event
     |> cast(attrs, [:start_date, :repetition, :name])
     |> validate_required([:start_date, :repetition])
+    |> set_event_name_if_nil()
     |> validate_inclusion(:repetition, [
       "each day",
       "each week",
