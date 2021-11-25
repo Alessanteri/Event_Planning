@@ -23,7 +23,13 @@ defmodule EventPlanningWeb.Router do
   scope "/", EventPlanningWeb do
     pipe_through(:browser)
     get("/home", HomeController, :index)
+    resources("/event", EventController, except: [:index])
+    get("/my_schedule", EventController, :my_schedule)
+    post("/my_schedule", EventController, :my_schedule)
+    get("/next_event", EventController, :next_event)
   end
+
+  # scope "/iae"  Ev
 
   if Mix.env() in [:dev, :test] do
     import Phoenix.LiveDashboard.Router

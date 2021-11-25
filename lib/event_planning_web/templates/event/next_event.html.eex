@@ -1,0 +1,25 @@
+<h1>This is Next Event</h1>
+<table>
+  <thead>
+
+  </thead>
+  <tbody>
+
+  <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
+    <div>
+    </div>
+  <% end %>
+      <%= if @events == [] do %>
+        <p>No upcoming events</p>
+      <% else %>
+        <p><%= @events.start_date %></p>
+        <span> <%= day = trunc(@time_to_next_event / 86400) %>d</span>
+        <span> <%= hour = trunc((@time_to_next_event - day * 86400) / 3600) %>h</span>
+        <span> <%= minute = trunc((@time_to_next_event - (day * 86400) - (hour * 3600)) / 60) %>m</span>
+        <span> <%= trunc(@time_to_next_event - (day * 86400) - (hour * 3600) - (minute * 60)) %>s</span>
+      <% end %>
+  </tbody>
+</table>
+
+
+<span><%= link "My Schedule", to: Routes.event_path(@conn, :my_schedule) %></span>
