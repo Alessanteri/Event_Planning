@@ -1,9 +1,5 @@
 defprotocol Ability do
-  # @spec can?(
-  #         schema :: Ecto.Schema.t(),
-  #         :create | :read | :update | :delete,
-  #         current_user :: Ecto.Schema.t()
-  #       ) :: boolean
+  alias EventPlanning.Models.Event
 
   def can?(schema, _action, current_user)
 end

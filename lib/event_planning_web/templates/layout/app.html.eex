@@ -19,9 +19,9 @@
       <br>
         <span><%= link "Profile", to: Routes.user_path(@conn, :show, user.id) %></span>
         <span><%= link "Edit", to: Routes.user_path(@conn, :edit, user.id) %></span>
-        <%= link "Log out", to: Routes.session_path(@conn, :delete, user.id), method: :delete %>
+        <%= link "Log out", to: Routes.page_path(@conn, :delete, user.id), method: :delete %>
       <% else %>
-        <%= link "Log in", to: Routes.session_path(@conn, :new) %>
+        <%= link "Log in", to: Routes.page_path(@conn, :new) %>
       <% end %>
       </li>
           </ul>

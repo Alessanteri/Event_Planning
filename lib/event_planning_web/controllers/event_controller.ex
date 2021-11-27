@@ -3,20 +3,14 @@ defmodule EventPlanningWeb.EventController do
 
   alias EventPlanning.Repo
 
-  alias EventPlanning.IAE
-  alias EventPlanning.IAE.Event
-
-  alias EventPlanning.Accounts
-  alias EventPlanning.Accounts.User
+  alias EventPlanning.Operation.Event.Workflow
+  alias EventPlanning.Models.Event
+  alias EventPlanning.Models.User
 
   import Ecto
-  import Ecto.Query
 
   plug(:assign_user)
   plug(:authorize_user)
-
-  # plug :require_existing_author
-  # plug :authorize_page when action in [:edit, :update, :delete]
 
   def new(conn, params) do
     changeset =
@@ -52,7 +46,7 @@ defmodule EventPlanningWeb.EventController do
   """
   def show(conn, %{"id" => id}) do
     if Ability.can?(%Event{}, :read, get_session(conn, :current_user)) do
-      event = IAE.get_event!(id)
+      event = Repo.get(Event, id)
       render(conn, "show.html", event: event)
     else
       event = Repo.get!(assoc(conn.assigns[:user], :event), id)
@@ -64,8 +58,8 @@ defmodule EventPlanningWeb.EventController do
   Edit event.
   """
   def edit(conn, %{"id" => id}) do
-    event = IAE.get_event!(id)
-    changeset = IAE.change_event(event)
+    event = Repo.get(Event, id)
+    changeset = Event.changeset(event, %{})
     render(conn, "edit.html", event: event, changeset: changeset)
   end
 
@@ -73,9 +67,9 @@ defmodule EventPlanningWeb.EventController do
   Update event.
   """
   def update(conn, %{"id" => id, "event" => event_params}) do
-    event = IAE.get_event!(id)
+    event = Repo.get(Event, id)
 
-    case IAE.update_event(event, event_params) do
+    case Workflow.update_event(event, event_params) do
       {:ok, _event} ->
         conn
         |> put_flash(:info, "Event updated successfully.")
@@ -90,12 +84,19 @@ defmodule EventPlanningWeb.EventController do
   Delete event.
   """
   def delete(conn, %{"id" => id}) do
-    event = IAE.get_event!(id)
-    {:ok, _event} = IAE.delete_event(event)
+    event = Repo.get(Event, id)
 
-    conn
-    |> put_flash(:info, "Event deleted successfully.")
-    |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
+    if event do
+      {:ok, _event} = Repo.delete(event)
+
+      conn
+      |> put_flash(:info, "Event deleted successfully.")
+      |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
+    else
+      conn
+      |> put_flash(:info, "Event not found.")
+      |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
+    end
   end
 
   @doc """
@@ -106,11 +107,9 @@ defmodule EventPlanningWeb.EventController do
   end
 
   def my_schedule(conn, params) when params != %{} do
-    %{"user_id" => user_id} = conn.params
     categories_id = "week"
 
     if conn.body_params == %{} do
-      categories_id
       call_up_my_schedule(conn, categories_id)
     else
       %{"page" => %{"categories_id" => categories_id}} = conn.body_params
@@ -118,7 +117,7 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
-  def call_up_my_schedule(conn, categories_id) do
+  defp call_up_my_schedule(conn, categories_id) do
     categories = ["week", "month", "year"]
 
     events = check_ability(conn, categories_id)
@@ -132,26 +131,21 @@ defmodule EventPlanningWeb.EventController do
     )
   end
 
-  def check_ability(conn, categories_id) do
+  defp check_ability(conn, categories_id) do
     if Ability.can?(%Event{}, :read, get_session(conn, :current_user)) do
-      events =
-        select_events_for_date(
-          create_events_greater_today(IAE.get_events_in_period_of_dates(categories_id)),
-          categories_id
-        )
+      select_events_for_date(
+        create_events_greater_today(Workflow.get_events_in_period_of_dates(categories_id)),
+        categories_id
+      )
     else
-      events =
-        select_events_for_date(
-          create_events_greater_today(Repo.all(assoc(conn.assigns[:user], :event))),
-          categories_id
-        )
+      select_events_for_date(
+        create_events_greater_today(Repo.all(assoc(conn.assigns[:user], :event))),
+        categories_id
+      )
     end
   end
 
-  @doc """
-  Selection of meetings by parameter.
-  """
-  def select_events_for_date(events, categories_id) when categories_id == "week" do
+  defp select_events_for_date(events, categories_id) when categories_id == "week" do
     events
     |> Enum.reject(fn x ->
       DateTime.diff(
@@ -161,7 +155,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  def select_events_for_date(events, categories_id) when categories_id == "month" do
+  defp select_events_for_date(events, categories_id) when categories_id == "month" do
     date_now = DateTime.now!("Europe/Minsk")
 
     date_end = %DateTime{
@@ -183,7 +177,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  def select_events_for_date(events, categories_id) when categories_id == "year" do
+  defp select_events_for_date(events, categories_id) when categories_id == "year" do
     date_end = create_date_end(DateTime.now!("Europe/Minsk"))
 
     events
@@ -192,10 +186,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  @doc """
-  Creates a date one year from today.
-  """
-  def create_date_end(date) do
+  defp create_date_end(date) do
     %DateTime{
       year: date.year + 1,
       month: date.month,
@@ -352,7 +343,7 @@ defmodule EventPlanningWeb.EventController do
   defp assign_user(conn, _opts) do
     case conn.params do
       %{"user_id" => user_id} ->
-        case Repo.get(Accounts.User, user_id) do
+        case Repo.get(User, user_id) do
           nil -> invalid_user(conn)
           user -> assign(conn, :user, user)
         end
@@ -365,7 +356,7 @@ defmodule EventPlanningWeb.EventController do
   defp invalid_user(conn) do
     conn
     |> put_flash(:error, "Invalid user!")
-    |> redirect(to: Routes.session_path(conn, :new))
+    |> redirect(to: Routes.page_path(conn, :new))
     |> halt
   end
 
@@ -377,7 +368,7 @@ defmodule EventPlanningWeb.EventController do
     else
       conn
       |> put_flash(:error, "You are not authorized to modify that post!")
-      |> redirect(to: Routes.session_path(conn, :new))
+      |> redirect(to: Routes.page_path(conn, :new))
       |> halt()
     end
   end

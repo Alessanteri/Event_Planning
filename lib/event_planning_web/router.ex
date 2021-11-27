@@ -16,8 +16,7 @@ defmodule EventPlanningWeb.Router do
   scope "/", EventPlanningWeb do
     pipe_through(:browser)
 
-    get("/", PageController, :login)
-    post("/", PageController, :login)
+    resources("/", PageController, only: [:new, :create, :delete])
   end
 
   scope "/", EventPlanningWeb do
@@ -29,11 +28,6 @@ defmodule EventPlanningWeb.Router do
       post("/my_schedule", EventController, :my_schedule)
       get("/next_event", EventController, :next_event)
     end
-
-    resources("/session", SessionController,
-      only: [:new, :create, :delete]
-      # singleton: true
-    )
   end
 
   scope "/", EventPlanningWeb do
@@ -62,7 +56,7 @@ defmodule EventPlanningWeb.Router do
         |> halt()
 
       user_id ->
-        assign(conn, :current_user, EventPlanning.Accounts.get_user!(user_id))
+        assign(conn, :current_user, EventPlanning.Operation.User.Workflow.get_user!(user_id))
     end
   end
 end
