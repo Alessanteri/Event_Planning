@@ -3,7 +3,7 @@ alias EventPlanning.Models.User
 defimpl Ability, for: User do
   alias EventPlanning.Repo
 
-  def can?(%User{}, action, current_user) when action in ~w[create delete]a do
+  def can?(%User{}, action, _current_user) when action in ~w[create delete]a do
     true
   end
 

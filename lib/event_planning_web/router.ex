@@ -1,6 +1,9 @@
 defmodule EventPlanningWeb.Router do
   use EventPlanningWeb, :router
 
+  alias EventPlanning.Models.User
+  alias EventPlanning.Repo
+
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
@@ -56,7 +59,7 @@ defmodule EventPlanningWeb.Router do
         |> halt()
 
       user_id ->
-        assign(conn, :current_user, EventPlanning.Operation.User.Workflow.get_user!(user_id))
+        assign(conn, :current_user, Repo.get!(User, user_id))
     end
   end
 end
