@@ -10,7 +10,7 @@ defmodule EventPlanning.Models.Event do
     field(:enabled, :boolean, default: false)
     belongs_to(:user, User)
 
-    timestamps()
+    # timestamps()
   end
 
   def set_event_name_if_nil(changeset) do

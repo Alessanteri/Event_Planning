@@ -63,7 +63,6 @@
 
 <% end %>
 
-
   </tbody>
 </table>
 
@@ -71,4 +70,16 @@
 <p><%= link "Next Event", to: Routes.user_event_path(@conn, :next_event, @user) %></p>
 <%= if @user.role == "admin" do %>
   <span><%= link "Show User", to: Routes.user_path(@conn, :index) %></span>
+<% end %>
+
+<%= form_for @conn, "my_schedule", [multipart: true], fn f -> %>
+
+  <div class="form-group">
+    <label>Documents</label>
+    <%= file_input f, :file, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= submit "Submit", class: "btn btn-primary" %>
+  </div>
 <% end %>
