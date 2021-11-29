@@ -6,6 +6,7 @@ defmodule EventPlanning.Repo.Migrations.CreateEvents do
       add(:start_date, :naive_datetime)
       add(:repetition, :string)
       add(:enabled, :boolean)
+      add(:name, :string)
 
       timestamps()
     end

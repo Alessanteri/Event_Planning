@@ -3,6 +3,7 @@
 <table>
   <thead>
     <tr>
+      <th> Name</th>
       <th> Start Date</th>
       <th> Repetition</th>
 
@@ -10,7 +11,6 @@
     </tr>
   </thead>
   <tbody>
-
   <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>
@@ -19,7 +19,8 @@
   <% end %>
 
 <%= for event <- @event_without_duplicate do %>
-    <tr>
+    <tr id=<%= event.id %>>
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
@@ -42,6 +43,7 @@
 <% end %>
 <%= for event <- @event_with_duplicate do %>
     <tr bgcolor="red">
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
