@@ -1,12 +1,15 @@
 defmodule EventPlanning.Models.Event do
   use Ecto.Schema
   import Ecto.Changeset
+  alias EventPlanning.Models.User
 
   schema "events" do
     field(:start_date, :naive_datetime)
     field(:repetition, :string)
     field(:name, :string)
     field(:enabled, :boolean, default: false)
+    belongs_to(:user, User)
+
     timestamps()
   end
 
@@ -17,7 +20,7 @@ defmodule EventPlanning.Models.Event do
     end
   end
 
-  def create_random_name() do
+  defp create_random_name() do
     symbols = Enum.concat([?0..?9, ?A..?Z, ?a..?z])
     symbol_count = Enum.count(symbols)
     s = for _ <- 1..6, into: "", do: <<Enum.at(symbols, :crypto.rand_uniform(0, symbol_count))>>
@@ -29,6 +32,7 @@ defmodule EventPlanning.Models.Event do
     |> cast(attrs, [:start_date, :repetition, :name, :enabled])
     |> validate_required([:start_date, :repetition, :enabled])
     |> set_event_name_if_nil()
+    |> unique_constraint(:name, name: :events_name_index, message: "This name already exists!")
     |> validate_inclusion(:repetition, [
       "day",
       "week",

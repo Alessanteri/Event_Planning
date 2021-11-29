@@ -9,6 +9,27 @@
     <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </head>
   <body>
+    <header>
+      <section class="container">
+        <nav role="navigation">
+          <ul>
+            <li><li>
+    <%= if user = current_user(@conn) do %>
+      <br>
+        <span><%= link "Profile", to: Routes.user_path(@conn, :show, user.id) %></span>
+        <span><%= link "Edit", to: Routes.user_path(@conn, :edit, user.id) %></span>
+        <%= link "Log out", to: Routes.page_path(@conn, :delete, user.id), method: :delete %>
+      <% else %>
+        <%= link "Log in", to: Routes.page_path(@conn, :new) %>
+      <% end %>
+      </li>
+          </ul>
+        </nav>
+        <a href="https://phoenixframework.org/" class="phx-logo">
+          <img src="<%= Routes.static_path(@conn, "/images/phoenix.png") %>" alt="Phoenix Framework Logo"/>
+        </a>
+      </section>
+    </header>
     <main role="main" class="container">
       <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
