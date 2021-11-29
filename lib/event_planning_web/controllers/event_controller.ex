@@ -9,6 +9,8 @@ defmodule EventPlanningWeb.EventController do
   alias EventPlanning.Accounts
   alias EventPlanning.Accounts.User
 
+  alias Ecto.Multi
+
   import Ecto
   import Ecto.Query
 
@@ -124,7 +126,7 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
-  def valid_data_in_file(conn, file) do
+  defp valid_data_in_file(conn, file) do
     Enum.reduce(file, 0, fn x, acc ->
       if x.dtstart != nil and x.comment != nil do
         acc
@@ -150,22 +152,17 @@ defmodule EventPlanningWeb.EventController do
     categories = ["week", "month", "year"]
     file = ICalendar.from_ics(File.read!(filepath))
 
-    if valid_data_in_file(conn, file) == 0 do
-      Enum.each(file, fn x ->
-        event = %{
-          "name" => x.summary,
-          "start_date" => x.dtstart,
-          "user_id" => get_session(conn, :current_user).id,
-          "repetition" => x.comment
+    events =
+      Enum.map(file, fn x ->
+        %{
+          name: x.summary,
+          start_date: DateTime.to_naive(x.dtstart),
+          user_id: get_session(conn, :current_user).id,
+          repetition: x.comment
         }
-
-        changeset =
-          conn.assigns[:user]
-          |> build_assoc(:event)
-          |> Event.changeset(event)
-          |> Repo.insert()
       end)
-    end
+
+    create_events(conn, events)
 
     events = check_ability(conn, categories_id)
 
@@ -174,6 +171,20 @@ defmodule EventPlanningWeb.EventController do
       event_with_duplicate: return_data_duplicate(events),
       categories: categories
     )
+  end
+
+  defp create_events(conn, events) do
+    events
+    |> Enum.with_index()
+    |> Enum.reduce(Multi.new(), fn {attr, idx}, multi ->
+      changeset =
+        conn.assigns[:user]
+        |> build_assoc(:event)
+        |> Event.changeset(attr)
+
+      Multi.insert(multi, {:invite, idx}, changeset)
+    end)
+    |> Repo.transaction()
   end
 
   def check_ability(conn, categories_id) do

@@ -9,7 +9,7 @@ defmodule EventPlanning.IAE.Event do
     field(:name, :string)
     belongs_to(:user, User)
 
-    timestamps()
+    # timestamps()
   end
 
   def set_event_name_if_nil(changeset) do
