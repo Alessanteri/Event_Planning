@@ -11,12 +11,9 @@ defmodule EventPlanning.Models.Event do
   end
 
   def set_event_name_if_nil(changeset) do
-    name = get_field(changeset, :name)
-
-    if is_nil(name) do
-      put_change(changeset, :name, create_random_name)
-    else
-      changeset
+    case get_field(changeset, :name) do
+      nil -> put_change(changeset, :name, create_random_name())
+      _else -> changeset
     end
   end
 
