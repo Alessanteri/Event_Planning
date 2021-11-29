@@ -1,4 +1,4 @@
-defmodule EventPlanning.IAE do
+defmodule EventPlanning.Operation.Event.Workflow do
   @moduledoc """
   The IAE context.
   """
@@ -6,26 +6,10 @@ defmodule EventPlanning.IAE do
   import Ecto.Query, warn: false
   alias EventPlanning.Repo
 
-  alias EventPlanning.IAE.Event
-  alias EventPlanning.Accounts.User
+  alias EventPlanning.Models.Event
+  alias EventPlanning.Models.User
 
   import Ecto
-
-  @doc """
-  Returns the list of events.
-  """
-  def list_events do
-    Event
-    |> Repo.all()
-  end
-
-  @doc """
-  Gets a single event.
-  """
-  def get_event!(id) do
-    Event
-    |> Repo.get!(id)
-  end
 
   @doc """
   Creates a event.
@@ -33,7 +17,6 @@ defmodule EventPlanning.IAE do
   def create_event(attrs \\ %{}) do
     %Event{}
     |> Event.changeset(attrs)
-    |> Event.set_event_name_if_nil()
     |> Repo.insert()
   end
 
@@ -43,22 +26,7 @@ defmodule EventPlanning.IAE do
   def update_event(%Event{} = event, attrs) do
     event
     |> Event.changeset(attrs)
-    |> Event.set_event_name_if_nil()
     |> Repo.update()
-  end
-
-  @doc """
-  Deletes a event.
-  """
-  def delete_event(%Event{} = event) do
-    Repo.delete(event)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking event changes.
-  """
-  def change_event(%Event{} = event, attrs \\ %{}) do
-    Event.changeset(event, attrs)
   end
 
   @doc """
@@ -103,7 +71,7 @@ defmodule EventPlanning.IAE do
   @doc """
   Returns a list of events for a certain time.
   """
-  def get_date_for_period(dtend) do
+  defp get_date_for_period(dtend) do
     Ecto.Query.from(e in Event, where: e.start_date <= ^dtend)
     |> Repo.all()
   end

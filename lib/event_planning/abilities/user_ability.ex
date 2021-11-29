@@ -1,18 +1,14 @@
-alias EventPlanning.Accounts
-alias EventPlanning.Accounts.User
+alias EventPlanning.Models.User
 
 defimpl Ability, for: User do
-  def can?(%User{}, :create, current_user) do
+  alias EventPlanning.Repo
+
+  def can?(%User{}, action, _current_user) when action in ~w[create delete]a do
+    true
   end
 
-  def can?(%User{}, :read, current_user) do
-    Accounts.get_user!(current_user.id).role == "admin"
-  end
-
-  def can?(%User{}, :update, current_user) do
-    Accounts.get_user!(current_user.id).role == "admin"
-  end
-
-  def can?(%User{}, :delete, current_user) do
+  def can?(%User{}, action, current_user) when action in ~w[read update]a do
+    user = Repo.get!(User, current_user.id)
+    user.role == "admin"
   end
 end

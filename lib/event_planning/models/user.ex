@@ -1,7 +1,7 @@
-defmodule EventPlanning.Accounts.User do
+defmodule EventPlanning.Models.User do
   use Ecto.Schema
   import Ecto.Changeset
-  alias EventPlanning.IAE.Event
+  alias EventPlanning.Models.Event
 
   schema "users" do
     field(:email, :string)
