@@ -1,11 +1,11 @@
 defmodule EventPlanningWeb.EventController do
   use EventPlanningWeb, :controller
 
-  alias EventPlanning.Repo
-
   alias EventPlanning.Operation.Event.Workflow
   alias EventPlanning.Models.Event
   alias EventPlanning.Models.User
+
+  alias EventPlanning.Repo
 
   import Ecto
 
@@ -122,8 +122,6 @@ defmodule EventPlanningWeb.EventController do
 
     events = check_ability(conn, categories_id)
 
-    Enum.each(events, fn x -> IO.puts(x.name) end)
-
     render(conn, "my_schedule.html",
       event_without_duplicate: return_data_without_duplicate(events),
       event_with_duplicate: return_data_duplicate(events),
@@ -224,7 +222,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each year" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "year" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -234,7 +232,10 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each month" do
+  @doc """
+  Find the nearest event recurring every month.
+  """
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "month" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -249,7 +250,10 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each week" do
+  @doc """
+  Find the nearest event recurring every week.
+  """
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "week" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -259,7 +263,10 @@ defmodule EventPlanningWeb.EventController do
     end
   end
 
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each day" do
+  @doc """
+  Find the nearest event recurring every day.
+  """
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "day" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -267,6 +274,10 @@ defmodule EventPlanningWeb.EventController do
 
       find_nearest_recurring_event(dt1, dt2, categories_id)
     end
+  end
+
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == nil do
+    dt1
   end
 
   @doc """

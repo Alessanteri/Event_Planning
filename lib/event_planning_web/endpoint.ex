@@ -7,11 +7,6 @@ defmodule EventPlanningWeb.Endpoint do
     signing_salt: "t93o9LJ5"
   ]
 
-  socket("/socket", EventPlanningWeb.UserSocket,
-    websocket: true,
-    longpoll: false
-  )
-
   socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
 
   plug(Plug.Static,

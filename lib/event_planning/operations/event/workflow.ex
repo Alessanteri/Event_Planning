@@ -17,7 +17,6 @@ defmodule EventPlanning.Operation.Event.Workflow do
   def create_event(attrs \\ %{}) do
     %Event{}
     |> Event.changeset(attrs)
-    |> Event.set_event_name_if_nil()
     |> Repo.insert()
   end
 

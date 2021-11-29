@@ -7,18 +7,16 @@ defmodule EventPlanning.Models.Event do
     field(:start_date, :naive_datetime)
     field(:repetition, :string)
     field(:name, :string)
+    field(:enabled, :boolean, default: false)
     belongs_to(:user, User)
 
     timestamps()
   end
 
-  defp set_event_name_if_nil(changeset) do
-    name = get_field(changeset, :name)
-
-    if is_nil(name) do
-      put_change(changeset, :name, create_random_name)
-    else
-      changeset
+  def set_event_name_if_nil(changeset) do
+    case get_field(changeset, :name) do
+      nil -> put_change(changeset, :name, create_random_name())
+      _else -> changeset
     end
   end
 
@@ -31,16 +29,16 @@ defmodule EventPlanning.Models.Event do
   @doc false
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:start_date, :repetition, :name])
-    |> validate_required([:start_date, :repetition])
+    |> cast(attrs, [:start_date, :repetition, :name, :enabled])
+    |> validate_required([:start_date, :repetition, :enabled])
     |> set_event_name_if_nil()
     |> unique_constraint(:name, name: :events_name_index, message: "This name already exists!")
     |> validate_inclusion(:repetition, [
-      "each day",
-      "each week",
-      "each month",
-      "each year",
-      "disable"
+      "day",
+      "week",
+      "month",
+      "year",
+      nil
     ])
   end
 end
