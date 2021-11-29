@@ -10,7 +10,7 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="table">
+  <tbody>
   <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>

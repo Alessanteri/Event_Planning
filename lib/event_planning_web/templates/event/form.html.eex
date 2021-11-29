@@ -9,7 +9,6 @@
   <%= text_input f, :name %>
   <%= error_tag f, :name %>
 
-
   <%= label f, :start_date %>
   <%= datetime_select f, :start_date %>
   <%= error_tag f, :start_date %>
