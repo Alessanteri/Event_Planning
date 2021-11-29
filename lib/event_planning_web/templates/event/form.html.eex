@@ -9,13 +9,21 @@
   <%= text_input f, :name %>
   <%= error_tag f, :name %>
 
+
   <%= label f, :start_date %>
   <%= datetime_select f, :start_date %>
   <%= error_tag f, :start_date %>
 
-  <%= label f, :repetition %>
-  <%= text_input f, :repetition %>
-  <%= error_tag f, :repetition %>
+  <%= label f, :enabled%>
+  <%= checkbox f, :enabled%>
+  <span> Repet </span>
+  <%= error_tag f, :enabled %>
+
+  <%= if :enabled do %>
+    <%= label f, :repetition %>
+    <%= text_input f, :repetition %>
+    <%= error_tag f, :repetition %>
+  <% end %>
 
   <div>
     <%= submit "Save" %>

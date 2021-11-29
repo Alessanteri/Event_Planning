@@ -11,7 +11,6 @@
     </tr>
   </thead>
   <tbody id="table">
-
   <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>
@@ -23,7 +22,15 @@
     <tr id=<%= event.id %>>
       <td><%= event.name %></td>
       <td><%= event.start_date %></td>
-      <td><%= event.repetition %></td>
+      <%= if event.enabled do%>
+        <%= if event.repetition != nil do%>
+          <td><%= event.repetition %></td>
+        <%= else %>
+          <td>No repetition</td>
+        <% end %>
+      <% else %>
+        <td>No repetition</td>
+      <% end %>
 
       <td>
         <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
@@ -38,8 +45,15 @@
     <tr bgcolor="red">
       <td><%= event.name %></td>
       <td><%= event.start_date %></td>
-      <td><%= event.repetition %></td>
-
+      <%= if event.enabled do%>
+        <%= if event.repetition != nil do%>
+          <td><%= event.repetition %></td>
+        <%= else %>
+          <td>No repetition</td>
+        <% end %>
+      <% else %>
+        <td>No repetition</td>
+      <% end %>
       <td>
         <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
         <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>

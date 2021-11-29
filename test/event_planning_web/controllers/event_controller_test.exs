@@ -1,6 +1,7 @@
 defmodule EventPlanningWeb.EventControllerTest do
   use EventPlanningWeb.ConnCase
 
+<<<<<<< HEAD
   alias EventPlanning.IAE
 
   @create_attrs %{repetition: "each day", start_date: ~N[2010-04-17 14:00:00]}
@@ -9,6 +10,16 @@ defmodule EventPlanningWeb.EventControllerTest do
 
   def fixture(:event) do
     {:ok, event} = IAE.create_event(@create_attrs)
+=======
+  alias EventPlanning.Operation.Event.Workflow
+
+  @create_attrs %{repetition: "day", start_date: ~N[2010-04-17 14:00:00], enabled: true}
+  @update_attrs %{repetition: "year", start_date: ~N[2011-05-18 15:01:01], enabled: true}
+  @invalid_attrs %{repetition: nil, start_date: nil, enabled: false}
+
+  def fixture(:event) do
+    {:ok, event} = Workflow.create_event(@create_attrs)
+>>>>>>> main
     event
   end
 
@@ -60,10 +71,13 @@ defmodule EventPlanningWeb.EventControllerTest do
     test "deletes chosen event", %{conn: conn, event: event} do
       conn = delete(conn, Routes.event_path(conn, :delete, event))
       assert redirected_to(conn) == Routes.event_path(conn, :my_schedule)
+<<<<<<< HEAD
 
       assert_error_sent(404, fn ->
         get(conn, Routes.event_path(conn, :show, event))
       end)
+=======
+>>>>>>> main
     end
   end
 
