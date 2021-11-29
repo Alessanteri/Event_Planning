@@ -21,6 +21,10 @@
   <% end %>
 
   <div>
-    <%= submit "Save", id: "submit" %>
+    <%= if @action == "/event" do %>
+      <%= submit "Save", id: "add"%>
+    <% else %>
+      <%= submit "Save", id: "update"%>
+    <% end %>
   </div>
 <% end %>

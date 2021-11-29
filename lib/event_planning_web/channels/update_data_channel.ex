@@ -40,9 +40,14 @@ defmodule EventPlanningWeb.UpdateDataChannel do
 
     Workflow.create_event(attrs)
 
-    broadcast(socket, "adding_new_event", %{content: message})
+    broadcast(socket, "adding_new_event", %{content: attrs})
     {:noreply, socket}
   end
+
+  # def handle_out("adding_new_event", payload, socket) do
+  #   push(socket, "adding_new_event", payload)
+  #   {:noreply, socket}
+  # end
 
   # Add authorization logic here as required.
   defp authorized?(_payload) do
