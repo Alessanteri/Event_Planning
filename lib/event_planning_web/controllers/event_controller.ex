@@ -4,10 +4,23 @@ defmodule EventPlanningWeb.EventController do
   alias EventPlanning.Operation.Event.Workflow
   alias EventPlanning.Models.Event
 
+  alias EventPlanning.Models.User
+
   alias EventPlanning.Repo
 
+  alias Ecto.Multi
+
+  import Ecto
+
+  plug(:assign_user)
+  plug(:authorize_user)
+
   def new(conn, params) do
-    changeset = Event.changeset(%Event{}, params)
+    changeset =
+      conn.assigns[:user]
+      |> build_assoc(:event)
+      |> Event.changeset(params)
+
     render(conn, "new.html", changeset: changeset)
   end
 
@@ -15,25 +28,32 @@ defmodule EventPlanningWeb.EventController do
   Create of a new event.
   """
   def create(conn, %{"event" => event_params}) do
-    conn
-    |> put_flash(:info, "Event created successfully.")
-    |> redirect(
-      to: Routes.event_path(conn, :my_schedule, %{"page" => %{"categories_id" => "week"}})
-    )
+    changeset =
+      conn.assigns[:user]
+      |> build_assoc(:event)
+      |> Event.changeset(event_params)
+
+    case Repo.insert(changeset) do
+      {:ok, _event} ->
+        conn
+        |> put_flash(:info, "Event created successfully.")
+        |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
+
+      {:error, changeset} ->
+        render(conn, "new.html", changeset: changeset)
+    end
   end
 
   @doc """
   Show  enevt.
   """
   def show(conn, %{"id" => id}) do
-    event = Repo.get(Event, id)
-
-    if event do
+    if Ability.can?(%Event{}, :read, get_session(conn, :current_user)) do
+      event = Repo.get(Event, id)
       render(conn, "show.html", event: event)
     else
-      conn
-      |> put_flash(:info, "Event not found.")
-      |> redirect(to: Routes.event_path(conn, :my_schedule))
+      event = Repo.get!(assoc(conn.assigns[:user], :event), id)
+      render(conn, "show.html", event: event)
     end
   end
 
@@ -53,10 +73,10 @@ defmodule EventPlanningWeb.EventController do
     event = Repo.get(Event, id)
 
     case Workflow.update_event(event, event_params) do
-      {:ok, event} ->
+      {:ok, _event} ->
         conn
         |> put_flash(:info, "Event updated successfully.")
-        |> redirect(to: Routes.event_path(conn, :my_schedule))
+        |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "edit.html", event: event, changeset: changeset)
@@ -74,43 +94,53 @@ defmodule EventPlanningWeb.EventController do
 
       conn
       |> put_flash(:info, "Event deleted successfully.")
-      |> redirect(
-        to: Routes.event_path(conn, :my_schedule, %{"page" => %{"categories_id" => "week"}})
-      )
+      |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
     else
       conn
       |> put_flash(:info, "Event not found.")
-      |> redirect(to: Routes.event_path(conn, :my_schedule))
+      |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
     end
   end
 
   @doc """
-  Show events schedule when are no parameters.
+  Show events schedule.
   """
   def my_schedule(conn, params) when params == %{} do
-    categories = ["week", "month", "year"]
+    call_up_my_schedule(conn, "week", "")
+  end
 
+  def my_schedule(conn, params) when params != %{} do
     categories_id = "week"
 
-    call_my_schedule(conn, categories, categories_id)
+    cond do
+      conn.body_params["page"] ->
+        categories_id
+        %{"page" => %{"categories_id" => categories_id}} = conn.body_params
+        call_up_my_schedule(conn, categories_id)
+
+      conn.body_params["file"] ->
+        file = conn.body_params["file"]
+        call_up_my_schedule(conn, categories_id, file.path)
+
+      true ->
+        call_up_my_schedule(conn, "week")
+    end
   end
 
-  @doc """
-  Show events schedule when parameters is not nil.
-  """
-  def my_schedule(conn, params) when params != %{} do
-    %{"page" => %{"categories_id" => categories_id}} = params
+  defp valid_data_in_file(conn, file) do
+    Enum.reduce(file, 0, fn x, acc ->
+      if x.dtstart != nil and x.comment != nil do
+        acc
+      else
+        acc = acc + 1
+      end
+    end)
+  end
+
+  def call_up_my_schedule(conn, categories_id) do
     categories = ["week", "month", "year"]
 
-    call_my_schedule(conn, categories, categories_id)
-  end
-
-  def call_my_schedule(conn, categories, categories_id) do
-    events =
-      select_events_for_date(
-        create_events_greater_today(Workflow.get_events_in_period_of_dates(categories_id)),
-        categories_id
-      )
+    events = check_ability(conn, categories_id)
 
     render(conn, "my_schedule.html",
       event_without_duplicate: return_data_without_duplicate(events),
@@ -119,10 +149,64 @@ defmodule EventPlanningWeb.EventController do
     )
   end
 
-  @doc """
-  Selection of meetings by parameter "week".
-  """
-  def select_events_for_date(events, categories_id) when categories_id == "week" do
+  def call_up_my_schedule(conn, categories_id, filepath) do
+    categories = ["week", "month", "year"]
+    file = ICalendar.from_ics(File.read!(filepath))
+
+    call_my_schedule(conn, categories, categories_id)
+  end
+
+  def call_my_schedule(conn, categories, categories_id) do
+    events =
+      Enum.map(file, fn x ->
+        %{
+          name: x.summary,
+          start_date: DateTime.to_naive(x.dtstart),
+          user_id: get_session(conn, :current_user).id,
+          repetition: x.comment
+        }
+      end)
+
+    create_events(conn, events)
+
+    events = check_ability(conn, categories_id)
+
+    render(conn, "my_schedule.html",
+      event_without_duplicate: return_data_without_duplicate(events),
+      event_with_duplicate: return_data_duplicate(events),
+      categories: categories
+    )
+  end
+
+  defp create_events(conn, events) do
+    events
+    |> Enum.with_index()
+    |> Enum.reduce(Multi.new(), fn {attr, idx}, multi ->
+      changeset =
+        conn.assigns[:user]
+        |> build_assoc(:event)
+        |> Event.changeset(attr)
+
+      Multi.insert(multi, {:invite, idx}, changeset)
+    end)
+    |> Repo.transaction()
+  end
+
+  defp check_ability(conn, categories_id) do
+    if Ability.can?(%Event{}, :read, get_session(conn, :current_user)) do
+      select_events_for_date(
+        create_events_greater_today(Workflow.get_events_in_period_of_dates(categories_id)),
+        categories_id
+      )
+    else
+      select_events_for_date(
+        create_events_greater_today(Repo.all(assoc(conn.assigns[:user], :event))),
+        categories_id
+      )
+    end
+  end
+
+  defp select_events_for_date(events, categories_id) when categories_id == "week" do
     events
     |> Enum.reject(fn x ->
       DateTime.diff(
@@ -132,10 +216,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  @doc """
-  Selection of meetings by parameter "month".
-  """
-  def select_events_for_date(events, categories_id) when categories_id == "month" do
+  defp select_events_for_date(events, categories_id) when categories_id == "month" do
     date_now = DateTime.now!("Europe/Minsk")
 
     date_end = %DateTime{
@@ -157,10 +238,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  @doc """
-  Selection of meetings by parameter "year".
-  """
-  def select_events_for_date(events, categories_id) when categories_id == "year" do
+  defp select_events_for_date(events, categories_id) when categories_id == "year" do
     date_end = create_date_end(DateTime.now!("Europe/Minsk"))
 
     events
@@ -169,10 +247,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  @doc """
-  Creates a date one year from today.
-  """
-  def create_date_end(date) do
+  defp create_date_end(date) do
     %DateTime{
       year: date.year + 1,
       month: date.month,
@@ -208,9 +283,9 @@ defmodule EventPlanningWeb.EventController do
   end
 
   @doc """
-  Find the nearest event recurring every year.
+  Find the nearest event recurring.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each year" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "year" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -223,7 +298,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every month.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each month" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "month" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -241,7 +316,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every week.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each week" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "week" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -254,7 +329,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Find the nearest event recurring every day.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each day" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "day" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -311,16 +386,7 @@ defmodule EventPlanningWeb.EventController do
   Returns the next event and the time before it.
   """
   def next_event(conn, _params) do
-    events = create_events_greater_today(Repo.all(Event))
-
-    min_date_value_events =
-      Enum.min_by(
-        events,
-        &DateTime.diff(
-          DateTime.from_naive!(&1.start_date, "Europe/Minsk"),
-          DateTime.now!("Europe/Minsk")
-        )
-      )
+    events = create_events_greater_today(Repo.all(assoc(conn.assigns[:user], :event)))
 
     if events == [] do
       render(conn, "next_event.html",
@@ -328,6 +394,15 @@ defmodule EventPlanningWeb.EventController do
         time_to_next_event: 0
       )
     else
+      min_date_value_events =
+        Enum.min_by(
+          events,
+          &DateTime.diff(
+            DateTime.from_naive!(&1.start_date, "Europe/Minsk"),
+            DateTime.now!("Europe/Minsk")
+          )
+        )
+
       render(conn, "next_event.html",
         events: min_date_value_events,
         time_to_next_event:
@@ -336,6 +411,39 @@ defmodule EventPlanningWeb.EventController do
             DateTime.now!("Europe/Minsk")
           )
       )
+    end
+  end
+
+  defp assign_user(conn, _opts) do
+    case conn.params do
+      %{"user_id" => user_id} ->
+        case Repo.get(User, user_id) do
+          nil -> invalid_user(conn)
+          user -> assign(conn, :user, user)
+        end
+
+      _ ->
+        invalid_user(conn)
+    end
+  end
+
+  defp invalid_user(conn) do
+    conn
+    |> put_flash(:error, "Invalid user!")
+    |> redirect(to: Routes.page_path(conn, :new))
+    |> halt
+  end
+
+  defp authorize_user(conn, _opts) do
+    user = get_session(conn, :current_user)
+
+    if user && Integer.to_string(user.id) == conn.params["user_id"] do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You are not authorized to modify that post!")
+      |> redirect(to: Routes.page_path(conn, :new))
+      |> halt()
     end
   end
 end

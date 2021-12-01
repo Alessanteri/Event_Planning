@@ -5,7 +5,7 @@
   </thead>
   <tbody>
 
-  <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
+  <%= form_for @conn, Routes.user_event_path(@conn, :my_schedule, @user), [as: :page, class: "form-signin"], fn f -> %>
     <div>
     </div>
   <% end %>
@@ -22,4 +22,4 @@
 </table>
 
 
-<span><%= link "My Schedule", to: Routes.event_path(@conn, :my_schedule) %></span>
+<span><%= link "My Schedule", to: Routes.user_event_path(@conn, :my_schedule, @user) %></span>

@@ -1,0 +1,19 @@
+<h1>Show User</h1>
+
+<ul>
+
+  <li>
+    <strong>Email:</strong>
+    <%= @user.email %>
+  </li>
+
+  <li>
+    <strong>Role:</strong>
+    <%= @user.role %>
+  </li>
+
+
+</ul>
+
+
+<span><%= link "Back", to: Routes.user_path(@conn, :index) %></span>

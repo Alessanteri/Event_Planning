@@ -8,6 +8,10 @@
     <%= hidden_input f, :id %>
   <% end %>
 
+  <%= label f, :name %>
+  <%= text_input f, :name %>
+  <%= error_tag f, :name %>
+
   <%= label f, :start_date %>
   <%= datetime_select f, :start_date, id: "start_date" %>
   <%= error_tag f, :start_date %>
@@ -31,3 +35,5 @@
     <% end %>
   </div>
 <% end %>
+
+<span id = "message"></span>

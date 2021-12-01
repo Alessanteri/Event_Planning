@@ -14,8 +14,8 @@
   <%= content_tag :p, hidden: true, id: "id_event" do %>
   <%= @event.id %>
   <% end %>
-  <span><%= link "Edit", to: Routes.event_path(@conn, :edit, @event) %></span>
-  <span><%= link "Delete", to: Routes.event_path(@conn, :delete, @event), method: :delete, data: [confirm: "Are you sure?"], id: "delete" %></span>
+  <span><%= link "Edit", to: Routes.user_event_path(@conn, :edit, @user, @event) %></span>
+  <span><%= link "Delete", to: Routes.user_event_path(@conn, :delete, @user, @event) method: :delete, data: [confirm: "Are you sure?"], id: "delete" %></span>
 
 </ul>
-<span><%= link "Back", to: Routes.event_path(@conn, :my_schedule) %></span>
+<span><%= link "Back", to: Routes.user_event_path(@conn, :my_schedule, @user) %></span>

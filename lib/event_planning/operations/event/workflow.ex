@@ -7,6 +7,7 @@ defmodule EventPlanning.Operation.Event.Workflow do
   alias EventPlanning.Repo
 
   alias EventPlanning.Models.Event
+<<<<<<< HEAD:lib/event_planning/operations/event/workflow.ex
 
   @doc """
   Gets a single event.
@@ -20,6 +21,11 @@ defmodule EventPlanning.Operation.Event.Workflow do
         nil
     end
   end
+=======
+  alias EventPlanning.Models.User
+
+  import Ecto
+>>>>>>> main:lib/event_planning/iae.ex
 
   @doc """
   Creates a event.
@@ -81,7 +87,7 @@ defmodule EventPlanning.Operation.Event.Workflow do
   @doc """
   Returns a list of events for a certain time.
   """
-  def get_date_for_period(dtend) do
+  defp get_date_for_period(dtend) do
     Ecto.Query.from(e in Event, where: e.start_date <= ^dtend)
     |> Repo.all()
   end

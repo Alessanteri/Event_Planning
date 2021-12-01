@@ -1,16 +1,15 @@
 <h1>Listing Events</h1>
-
 <table>
   <thead>
     <tr>
+      <th> Name</th>
       <th> Start Date</th>
       <th> Repetition</th>
       <th></th>
     </tr>
   </thead>
-  <tbody id="table">
-
-  <%= form_for @conn, Routes.event_path(@conn, :my_schedule), [as: :page, class: "form-signin"], fn f -> %>
+  <tbody id="table"
+  <%= form_for @conn, Routes.user_event_path(@conn, :my_schedule, @user), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>
     </div>
@@ -19,6 +18,8 @@
 
 <%= for event <- @event_without_duplicate do %>
     <%= content_tag :tr, id: event.id do %>
+    <tr id=<%= event.id %>>
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
@@ -31,8 +32,7 @@
       <% end %>
 
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event), id: "show" <> Integer.to_string(event.id)%></span>
-
+        <span><%= link "Show", to: utes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
       </td>
 
     <% end %>
@@ -40,6 +40,8 @@
 <% end %>
 <%= for event <- @event_with_duplicate do %>
         <%= content_tag :tr, id: event.id, bgcolor: "red" do %>
+    <tr bgcolor="red">
+      <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
@@ -51,7 +53,7 @@
         <td>No repetition</td>
       <% end %>
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event), id: "show" <> Integer.to_string(event.id)%></span>
+        <span><%= link "Show", to: utes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
       </td>
 
     <% end %>
@@ -62,5 +64,20 @@
 </table>
   </tbody>
 
-<span><%= link "New Event", to: Routes.event_path(@conn, :new), id: "new_event" %></span>
-<p><%= link "Next Event", to: Routes.event_path(@conn, :next_event) %></p>
+<span><%= link "New Event", to: Routes.user_event_path(@conn, :new, @user) %></span>
+<p><%= link "Next Event", to: Routes.user_event_path(@conn, :next_event, @user) %></p>
+<%= if @user.role == "admin" do %>
+  <span><%= link "Show User", to: Routes.user_path(@conn, :index) %></span>
+<% end %>
+
+<%= form_for @conn, "my_schedule", [multipart: true], fn f -> %>
+
+  <div class="form-group">
+    <label>Documents</label>
+    <%= file_input f, :file, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= submit "Submit", class: "btn btn-primary" %>
+  </div>
+<% end %>
