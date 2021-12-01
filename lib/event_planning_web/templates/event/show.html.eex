@@ -4,15 +4,18 @@
 
   <li>
     <strong> start date:</strong>
-    <%= @event. start_date %>
+    <%= @event.start_date %>
   </li>
 
   <li>
     <strong> repetition:</strong>
-    <%= @event. repetition %>
+    <%= @event.repetition %>
   </li>
+  <%= content_tag :p, hidden: true, id: "id_event" do %>
+  <%= @event.id %>
+  <% end %>
+  <span><%= link "Edit", to: Routes.event_path(@conn, :edit, @event) %></span>
+  <span><%= link "Delete", to: Routes.event_path(@conn, :delete, @event), method: :delete, data: [confirm: "Are you sure?"], id: "delete" %></span>
 
 </ul>
-
-<span><%= link "Edit", to: Routes.event_path(@conn, :edit, @event) %></span>
 <span><%= link "Back", to: Routes.event_path(@conn, :my_schedule) %></span>

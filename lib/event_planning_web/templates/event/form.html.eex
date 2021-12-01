@@ -4,6 +4,9 @@
       <p>Oops, something went wrong! Please check the errors below.</p>
     </div>
   <% end %>
+  <%= if @action != "/event" do %>
+    <%= hidden_input f, :id %>
+  <% end %>
 
   <%= label f, :start_date %>
   <%= datetime_select f, :start_date, id: "start_date" %>

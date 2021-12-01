@@ -15,17 +15,11 @@ defmodule EventPlanningWeb.EventController do
   Create of a new event.
   """
   def create(conn, %{"event" => event_params}) do
-    # case Workflow.create_event(event_params) do
-    #   {:ok, _event} ->
     conn
     |> put_flash(:info, "Event created successfully.")
     |> redirect(
       to: Routes.event_path(conn, :my_schedule, %{"page" => %{"categories_id" => "week"}})
     )
-
-    # {:error, %Ecto.Changeset{} = changeset} ->
-    #   render(conn, "new.html", changeset: changeset)
-    # end
   end
 
   @doc """

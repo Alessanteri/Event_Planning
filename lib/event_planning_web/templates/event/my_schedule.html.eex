@@ -5,7 +5,6 @@
     <tr>
       <th> Start Date</th>
       <th> Repetition</th>
-
       <th></th>
     </tr>
   </thead>
@@ -19,7 +18,7 @@
   <% end %>
 
 <%= for event <- @event_without_duplicate do %>
-    <tr>
+    <%= content_tag :tr, id: event.id do %>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
@@ -32,16 +31,15 @@
       <% end %>
 
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
-        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
-        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%= link "Show", to: Routes.event_path(@conn, :show, event), id: "show" <> Integer.to_string(event.id)%></span>
+
       </td>
 
-    </tr>
+    <% end %>
 
 <% end %>
 <%= for event <- @event_with_duplicate do %>
-    <tr bgcolor="red">
+        <%= content_tag :tr, id: event.id, bgcolor: "red" do %>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
         <%= if event.repetition != nil do%>
@@ -53,21 +51,16 @@
         <td>No repetition</td>
       <% end %>
       <td>
-        <span><%= link "Show", to: Routes.event_path(@conn, :show, event) %></span>
-        <span><%= link "Edit", to: Routes.event_path(@conn, :edit, event) %></span>
-        <span><%= link "Delete", to: Routes.event_path(@conn, :delete, event), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%= link "Show", to: Routes.event_path(@conn, :show, event), id: "show" <> Integer.to_string(event.id)%></span>
       </td>
 
-    </tr>
+    <% end %>
 
 <% end %>
+<tr id="event"></tr>
 
-
-  </tbody>
 </table>
+  </tbody>
 
 <span><%= link "New Event", to: Routes.event_path(@conn, :new), id: "new_event" %></span>
 <p><%= link "Next Event", to: Routes.event_path(@conn, :next_event) %></p>
-
-
-<p id ="ttt">
