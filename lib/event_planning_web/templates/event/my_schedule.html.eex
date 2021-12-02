@@ -8,7 +8,7 @@
       <th></th>
     </tr>
   </thead>
-  <tbody id="table"
+  <tbody id="table">
   <%= form_for @conn, Routes.user_event_path(@conn, :my_schedule, @user), [as: :page, class: "form-signin"], fn f -> %>
     <div>
       <%= select f, :categories_id, @categories %>
@@ -18,7 +18,6 @@
 
 <%= for event <- @event_without_duplicate do %>
     <%= content_tag :tr, id: event.id do %>
-    <tr id=<%= event.id %>>
       <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
@@ -32,15 +31,14 @@
       <% end %>
 
       <td>
-        <span><%= link "Show", to: utes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
+        <span><%= link "Show", to: Routes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
       </td>
 
     <% end %>
 
 <% end %>
 <%= for event <- @event_with_duplicate do %>
-        <%= content_tag :tr, id: event.id, bgcolor: "red" do %>
-    <tr bgcolor="red">
+    <%= content_tag :tr, id: event.id, bgcolor: "red" do %>
       <td><%= event.name %></td>
       <td><%= event.start_date %></td>
       <%= if event.enabled do%>
@@ -53,7 +51,7 @@
         <td>No repetition</td>
       <% end %>
       <td>
-        <span><%= link "Show", to: utes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
+        <span><%= link "Show", to: Routes.user_event_path(@conn, :show, @user, event), id: "show" <> Integer.to_string(event.id)%></span>
       </td>
 
     <% end %>

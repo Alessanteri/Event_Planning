@@ -4,12 +4,14 @@
       <p>Oops, something went wrong! Please check the errors below.</p>
     </div>
   <% end %>
-  <%= if @action != "/event" do %>
+  <%= content_tag :p, hidden: true, id: "id_user" do %>
+    <%= @user.id %>
+  <% end %>
+  <%= if @action != "/users/" <> to_string(@user.id) <> "/event" do %>
     <%= hidden_input f, :id %>
   <% end %>
-
   <%= label f, :name %>
-  <%= text_input f, :name %>
+  <%= text_input f, :name, id: "name_event" %>
   <%= error_tag f, :name %>
 
   <%= label f, :start_date %>
@@ -28,7 +30,7 @@
   <% end %>
 
   <div>
-    <%= if @action == "/event" do %>
+    <%= if @action == "/users/" <> to_string(@user.id) <> "/event" do %>
       <%= submit "Save", id: "add"%>
     <% else %>
       <%= submit "Save", id: "update"%>

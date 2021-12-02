@@ -3,11 +3,14 @@ defmodule EventPlanningWeb.UpdateDataChannel do
 
   alias EventPlanning.Operation.Event.Workflow
   alias EventPlanning.Models.Event
+  alias EventPlanning.Models.User
 
   import Phoenix.HTML
   import Phoenix.HTML.Link
 
   alias EventPlanning.Repo
+
+  import Ecto
 
   intercept(["new_event", "update_event", "delete_event"])
 
@@ -24,7 +27,17 @@ defmodule EventPlanningWeb.UpdateDataChannel do
   end
 
   def handle_in("new_event", %{"message" => message}, socket) do
-    {:ok, event} = Workflow.create_event(create_attrs_event(message))
+    %{
+      "id_user" => id_user
+    } = message
+
+    changeset =
+      Repo.get!(User, String.to_integer(String.replace(id_user, ~r/[^0-9]/, "")))
+      |> build_assoc(:event)
+      |> Event.changeset(create_attrs_event(message))
+
+    {:ok, event} = Repo.insert(changeset)
+
     broadcast(socket, "new_event", %{id: event.id})
     {:noreply, socket}
   end
@@ -44,7 +57,8 @@ defmodule EventPlanningWeb.UpdateDataChannel do
 
   def handle_in("update_event", %{"message" => message}, socket) do
     %{
-      "id" => id
+      "id" => id,
+      "name" => name
     } = message
 
     {:ok, event} = Workflow.update_event(Repo.get(Event, id), create_attrs_event(message))
@@ -79,30 +93,29 @@ defmodule EventPlanningWeb.UpdateDataChannel do
 
   def generate_html(event) do
     ~E"""
-    <tr>
+    <td><%= event.name %></td>
     <%= if event.repetition == nil do %>
       <td><%= event.start_date %></td>
     <% else %>
       <td><%= puts_date_start(event.start_date, event.repetition) %></td>
     <% end %>
     <%= if event.enabled do%>
-    <%= if event.repetition != nil do%>
-      <td><%= event.repetition %></td>
-    <%= else %>
-      <td>No repetition</td>
-    <% end %>
+      <%= if event.repetition == nil do%>
+        <td>No repetition</td>
+      <%= else %>
+        <td><%= event.repetition %></td>
+      <% end %>
     <% else %>
-    <td>No repetition</td>
+      <td>No repetition</td>
     <% end %>
     <td>
       <span><%= link "Show", to: "event/" <> Integer.to_string(event.id) %></span>
     </td>
-    </tr>
     """
     |> safe_to_string()
   end
 
-  def puts_date_start(start_date, repetition) when repetition == "each day" do
+  def puts_date_start(start_date, repetition) do
     DateTime.to_naive(
       find_nearest_recurring_event(
         DateTime.from_naive!(start_date, "Europe/Minsk"),
@@ -112,7 +125,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
     )
   end
 
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each year" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "year" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -125,7 +138,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
   @doc """
   Find the nearest event recurring every month.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each month" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "month" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -143,7 +156,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
   @doc """
   Find the nearest event recurring every week.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each week" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "week" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -156,7 +169,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
   @doc """
   Find the nearest event recurring every day.
   """
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "each day" do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "day" do
     if DateTime.diff(dt1, dt2) > 0 do
       dt1
     else
@@ -166,7 +179,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
     end
   end
 
-  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == nil do
+  def find_nearest_recurring_event(dt1, dt2, categories_id) when categories_id == "" do
     dt1
   end
 
@@ -193,7 +206,8 @@ defmodule EventPlanningWeb.UpdateDataChannel do
       "date_hour" => date_hour,
       "date_minute" => date_minute,
       "repetition" => repetition,
-      "enabled" => enabled
+      "enabled" => enabled,
+      "name" => name
     } = message
 
     datetime =
@@ -206,7 +220,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
         Time.new!(String.to_integer(date_hour), String.to_integer(date_minute), 0, 0)
       )
 
-    %{start_date: datetime, enabled: enabled, repetition: repetition}
+    %{start_date: datetime, enabled: enabled, repetition: repetition, name: name}
   end
 
   # Add authorization logic here as required.

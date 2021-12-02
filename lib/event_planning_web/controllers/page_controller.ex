@@ -5,7 +5,7 @@ defmodule EventPlanningWeb.PageController do
 
   @password "DgB4PPljWY"
 
-  plug(:check_password)
+  # plug(:check_password)
 
   def new(conn, _params) do
     render(conn, "new.html")
@@ -13,7 +13,9 @@ defmodule EventPlanningWeb.PageController do
 
   def check_password(conn, _opts) do
     if get_session(conn, :password) == @password do
-      redirect(conn, to: Routes.home_path(conn, :index))
+      redirect(conn,
+        to: Routes.user_event_path(conn, :my_schedule, get_session(conn, :current_user).id)
+      )
     else
       conn
     end

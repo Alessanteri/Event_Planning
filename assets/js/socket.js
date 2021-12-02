@@ -31,7 +31,9 @@ submitButton.click(() => {
     let { value: date_hour } = document.querySelector('#start_date_hour')
     let { value: date_minute } = document.querySelector('#start_date_minute')
     let { value: enabled } = document.querySelector('#enabled')
-    channel.push('new_event', { message: { repetition, date_year, date_month, date_day, date_hour, date_minute, enabled } })
+    let { value: name } = document.querySelector('#name_event')
+    let id_user = document.getElementById('id_user').textContent
+    channel.push('new_event', { message: { repetition, date_year, date_month, date_day, date_hour, date_minute, enabled, name, id_user } })
 })
 
 updateButton.click(() => {
@@ -43,7 +45,8 @@ updateButton.click(() => {
     let { value: date_hour } = document.querySelector('#start_date_hour')
     let { value: date_minute } = document.querySelector('#start_date_minute')
     let { value: enabled } = document.querySelector('#enabled')
-    channel.push('update_event', { message: { repetition, date_year, date_month, date_day, date_hour, date_minute, enabled, id } })
+    let { value: name } = document.querySelector('#name_event')
+    channel.push('update_event', { message: { repetition, date_year, date_month, date_day, date_hour, date_minute, enabled, id, name } })
 })
 
 deleteButton.click(() => {
@@ -53,18 +56,15 @@ deleteButton.click(() => {
 
 
 channel.on("new_event", (payload) => {
-    console.log(payload)
     renderHTML(payload)
 })
 
 channel.on("update_event", (payload) => {
-    console.log(payload)
     $("#" + payload.id).hide()
     renderHTML(payload)
 })
 
 channel.on("delete_event", (payload) => {
-    console.log(payload)
     $("#" + payload.id).hide()
 })
 

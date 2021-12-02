@@ -47,11 +47,8 @@ defmodule EventPlanning.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:poison, "~> 3.0"},
       {:tzdata, "~> 1.1"},
-<<<<<<< HEAD
-      {:guardian, "~> 0.14"}
-=======
+      {:guardian, "~> 0.14"},
       {:icalendar, "~> 1.1.0"}
->>>>>>> main
     ]
   end
 
