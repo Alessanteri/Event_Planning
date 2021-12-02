@@ -6,10 +6,10 @@ defmodule EventPlanning.Repo.Migrations.CreateEvents do
       add(:start_date, :naive_datetime, null: false)
       add(:repetition, :string)
       add(:name, :string)
-      add(:enabled, :boolean)
+      add(:enabled, :boolean, null: false)
       add(:user_id, references(:users, on_delete: :delete_all), null: false)
 
-      # timestamps()
+      timestamps()
     end
 
     create(unique_index(:events, [:name]))

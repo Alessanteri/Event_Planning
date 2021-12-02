@@ -32,7 +32,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
     } = message
 
     changeset =
-      Repo.get!(User, String.to_integer(String.replace(id_user, ~r/[^0-9]/, "")))
+      Repo.get(User, String.to_integer(String.replace(id_user, ~r/[^0-9]/, "")))
       |> build_assoc(:event)
       |> Event.changeset(create_attrs_event(message))
 
@@ -57,8 +57,7 @@ defmodule EventPlanningWeb.UpdateDataChannel do
 
   def handle_in("update_event", %{"message" => message}, socket) do
     %{
-      "id" => id,
-      "name" => name
+      "id" => id
     } = message
 
     {:ok, event} = Workflow.update_event(Repo.get(Event, id), create_attrs_event(message))
