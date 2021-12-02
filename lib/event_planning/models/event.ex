@@ -1,7 +1,6 @@
 defmodule EventPlanning.Models.Event do
   use Ecto.Schema
   import Ecto.Changeset
-  alias EventPlanning.Models.User
 
   schema "events" do
     field(:start_date, :naive_datetime)
@@ -10,7 +9,7 @@ defmodule EventPlanning.Models.Event do
     field(:enabled, :boolean, default: false)
     belongs_to(:user, User)
 
-    # timestamps()
+    timestamps()
   end
 
   def set_event_name_if_nil(changeset) do
@@ -30,7 +29,7 @@ defmodule EventPlanning.Models.Event do
   def changeset(event, attrs) do
     event
     |> cast(attrs, [:start_date, :repetition, :name, :enabled])
-    |> validate_required([:start_date, :repetition, :enabled])
+    |> validate_required([:start_date, :enabled])
     |> set_event_name_if_nil()
     |> unique_constraint(:name, name: :events_name_index, message: "This name already exists!")
     |> validate_inclusion(:repetition, [

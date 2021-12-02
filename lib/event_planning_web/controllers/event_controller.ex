@@ -3,6 +3,7 @@ defmodule EventPlanningWeb.EventController do
 
   alias EventPlanning.Operation.Event.Workflow
   alias EventPlanning.Models.Event
+
   alias EventPlanning.Models.User
 
   alias EventPlanning.Repo
@@ -27,20 +28,9 @@ defmodule EventPlanningWeb.EventController do
   Create of a new event.
   """
   def create(conn, %{"event" => event_params}) do
-    changeset =
-      conn.assigns[:user]
-      |> build_assoc(:event)
-      |> Event.changeset(event_params)
-
-    case Repo.insert(changeset) do
-      {:ok, _event} ->
-        conn
-        |> put_flash(:info, "Event created successfully.")
-        |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
-
-      {:error, changeset} ->
-        render(conn, "new.html", changeset: changeset)
-    end
+    conn
+    |> put_flash(:info, "Event created successfully.")
+    |> redirect(to: Routes.user_event_path(conn, :my_schedule, conn.assigns[:user]))
   end
 
   @doc """
@@ -109,7 +99,7 @@ defmodule EventPlanningWeb.EventController do
   end
 
   def my_schedule(conn, params) when params != %{} do
-    categories_id = "week"
+    categories_id = "year"
 
     cond do
       conn.body_params["page"] ->
@@ -122,7 +112,7 @@ defmodule EventPlanningWeb.EventController do
         call_up_my_schedule(conn, categories_id, file.path)
 
       true ->
-        call_up_my_schedule(conn, "week")
+        call_up_my_schedule(conn, "year")
     end
   end
 
@@ -136,7 +126,7 @@ defmodule EventPlanningWeb.EventController do
     end)
   end
 
-  def call_up_my_schedule(conn, categories_id) do
+  defp call_up_my_schedule(conn, categories_id) do
     categories = ["week", "month", "year"]
 
     events = check_ability(conn, categories_id)
@@ -148,10 +138,14 @@ defmodule EventPlanningWeb.EventController do
     )
   end
 
-  def call_up_my_schedule(conn, categories_id, filepath) do
+  defp call_up_my_schedule(conn, categories_id, filepath) do
     categories = ["week", "month", "year"]
     file = ICalendar.from_ics(File.read!(filepath))
 
+    call_my_schedule(conn, categories, categories_id, file)
+  end
+
+  defp call_my_schedule(conn, categories, categories_id, file) do
     events =
       Enum.map(file, fn x ->
         %{
@@ -214,23 +208,43 @@ defmodule EventPlanningWeb.EventController do
   defp select_events_for_date(events, categories_id) when categories_id == "month" do
     date_now = DateTime.now!("Europe/Minsk")
 
-    date_end = %DateTime{
-      year: date_now.year,
-      month: date_now.month + 1,
-      day: date_now.day,
-      zone_abbr: "AMT",
-      hour: date_now.hour,
-      minute: date_now.minute,
-      second: date_now.second,
-      utc_offset: -14400,
-      std_offset: 0,
-      time_zone: "Europe/Minsk"
-    }
+    if date_now.month == 12 do
+      date_end = %DateTime{
+        year: date_now.year + 1,
+        month: date_now.month - 11,
+        day: date_now.day,
+        zone_abbr: "AMT",
+        hour: date_now.hour,
+        minute: date_now.minute,
+        second: date_now.second,
+        utc_offset: -14400,
+        std_offset: 0,
+        time_zone: "Europe/Minsk"
+      }
 
-    events
-    |> Enum.reject(fn x ->
-      DateTime.diff(DateTime.from_naive!(x.start_date, "Europe/Minsk"), date_end) > 0
-    end)
+      events
+      |> Enum.reject(fn x ->
+        DateTime.diff(DateTime.from_naive!(x.start_date, "Europe/Minsk"), date_end) > 0
+      end)
+    else
+      date_end = %DateTime{
+        year: date_now.year,
+        month: date_now.month + 1,
+        day: date_now.day,
+        zone_abbr: "AMT",
+        hour: date_now.hour,
+        minute: date_now.minute,
+        second: date_now.second,
+        utc_offset: -14400,
+        std_offset: 0,
+        time_zone: "Europe/Minsk"
+      }
+
+      events
+      |> Enum.reject(fn x ->
+        DateTime.diff(DateTime.from_naive!(x.start_date, "Europe/Minsk"), date_end) > 0
+      end)
+    end
   end
 
   defp select_events_for_date(events, categories_id) when categories_id == "year" do
@@ -260,7 +274,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Creates events greater than today.
   """
-  def create_events_greater_today(events) do
+  defp create_events_greater_today(events) do
     events
     |> Enum.map(fn x ->
       %{
@@ -341,7 +355,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Returns non-duplicate events.
   """
-  def return_data_without_duplicate(events) do
+  defp return_data_without_duplicate(events) do
     Enum.reduce(events, [], fn x, acc ->
       if count_number_of_repetitions_data_start(events, x) == 0 do
         List.insert_at(acc, -1, x)
@@ -354,7 +368,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Returns duplicate events.
   """
-  def return_data_duplicate(events) do
+  defp return_data_duplicate(events) do
     Enum.reduce(events, [], fn x, acc ->
       if count_number_of_repetitions_data_start(events, x) != 0 do
         List.insert_at(acc, -1, x)
@@ -367,7 +381,7 @@ defmodule EventPlanningWeb.EventController do
   @doc """
   Counts the number of repetitions of events.
   """
-  def count_number_of_repetitions_data_start(events, item) do
+  defp count_number_of_repetitions_data_start(events, item) do
     Enum.reduce(events, -1, fn y, ac ->
       if item.start_date == y.start_date do
         ac + 1

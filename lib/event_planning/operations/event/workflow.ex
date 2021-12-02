@@ -42,14 +42,25 @@ defmodule EventPlanning.Operation.Event.Workflow do
   def get_events_in_period_of_dates(categories_id) when categories_id == "month" do
     dtstart = DateTime.now!("Europe/Minsk")
 
-    dtend =
-      Date.new!(
-        DateTime.to_date(dtstart).year,
-        DateTime.to_date(dtstart).month + 1,
-        DateTime.to_date(dtstart).day
-      )
+    if dtstart.month == 12 do
+      dtend =
+        Date.new!(
+          DateTime.to_date(dtstart).year + 1,
+          DateTime.to_date(dtstart).month - 11,
+          DateTime.to_date(dtstart).day
+        )
 
-    get_date_for_period(DateTime.new!(dtend, DateTime.to_time(dtstart)))
+      get_date_for_period(DateTime.new!(dtend, DateTime.to_time(dtstart)))
+    else
+      dtend =
+        Date.new!(
+          DateTime.to_date(dtstart).year,
+          DateTime.to_date(dtstart).month + 1,
+          DateTime.to_date(dtstart).day
+        )
+
+      get_date_for_period(DateTime.new!(dtend, DateTime.to_time(dtstart)))
+    end
   end
 
   @doc """

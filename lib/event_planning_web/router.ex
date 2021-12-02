@@ -34,7 +34,7 @@ defmodule EventPlanningWeb.Router do
   end
 
   scope "/", EventPlanningWeb do
-    pipe_through([:browser, :authenticate_user])
+    pipe_through([:browser])
 
     get("/home", HomeController, :index)
   end
@@ -53,7 +53,7 @@ defmodule EventPlanningWeb.Router do
       nil ->
         conn
         |> Phoenix.Controller.put_flash(:error, "Login required")
-        |> Phoenix.Controller.redirect(to: "/session/new")
+        |> redirect(to: Routes.page_path(conn, :new))
         |> halt()
 
       user_id ->
